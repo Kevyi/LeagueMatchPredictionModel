@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from utils.writeChampions import writeChampion
 import requests
 import json
 import os
@@ -18,8 +19,9 @@ def getRankedUsers(queue : str, tier : str, division : str, page : int, region: 
     url = f"https://{region}.api.riotgames.com/lol/league-exp/v4/entries/{queue}/{tier}/{division}?page={page}&api_key={api_key}"
 
     response = requests.get(url)
-
-    print(json.dumps(response.json(), indent = 4))  
+    print(response.status_code)
+    # print(json.dumps(response.json(), indent = 4))  
+    return response.json() , response.status_code
 
 #remember to check for match duplicates. 420 = soloq, 440 = ranked flex
 def getMatchesFromPlayer(region : str, puuid : str, startTime : int, count : int,  queue : int = 420, matchType : str = "ranked"):
@@ -34,8 +36,12 @@ def getMatchStats(region : str, matchID : str):
     url = f"https://{region}.api.riotgames.com/lol/match/v5/matches/{matchID}?api_key={api_key}"
 
     response = requests.get(url)
-    print(json.dumps(response.json(), indent = 4))  
+    # print(json.dumps(response.json()['info']['participants'][0]["championName"], indent = 4))
+    players = response.json()['info']['participants']
 
+    for i in range(10):
+        player = players[i]
+        writeChampion(player["championId"], player["championName"])
 
 def getMatchTimeLine():
     pass

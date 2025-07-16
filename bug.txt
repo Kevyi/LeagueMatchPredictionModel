@@ -1,0 +1,2 @@
+Sometimes API calls are getting called multiple times even after sleep. --Fixed?
+Change List to set within CollectData because there are duplicate unique identifiers. Maybe riot games issue?

@@ -2,6 +2,7 @@ import requests
 import json
 from datetime import datetime, timedelta, timezone
 import endpoints as APIs
+import utils.collectData as data
 
 queue_types = ["RANKED_SOLO_5x5","RANKED_FLEX_SR"]
 tiers = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"] #ranks
@@ -24,6 +25,8 @@ start_time = int(start_of_yesterday.timestamp())
 #Gets matches from yesterday to now. Ranked Flexed queue.                   
 # APIs.getMatchesFromPlayer(region = "americas", puuid = puuid, startTime = start_time, count = 20, queue = 440, matchType = "ranked")
 # APIs.getRankedUsers(queue = queue_types[0], tier = tiers[-1], division = divisions[0], page = 1, region = "na1")
+data.getAllMasters()
 
-APIs.getMatchStats(region = "americas", matchID = "NA1_5321872731")
+
+# APIs.getMatchStats(region = "americas", matchID = "NA1_5321872731")
 #Use the champion id and not the name, use to determine pytorch winrate.
