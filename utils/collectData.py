@@ -53,8 +53,11 @@ def getRankedPlayers(tier : str):
 
         page += 1
     
+    count = 0
     for player in players:
         getYesterdayPlayerMatches(player)
+        count += 1 
+        print(f"Matches: {count}")
         #Buffer calls.
         time.sleep(0.2)
 
@@ -85,7 +88,7 @@ def getYesterdayPlayerMatches(puuid : str):
     today_utc = datetime.now(timezone.utc).date()
 
     # Calculate yesterday's date
-    yesterday_date = today_utc - timedelta(days=1)
+    yesterday_date = today_utc - timedelta(days=7)
 
     # Get midnight (start) of yesterday as a timezone-aware datetime
     start_of_yesterday = datetime(yesterday_date.year, yesterday_date.month, yesterday_date.day, tzinfo=timezone.utc)
@@ -106,8 +109,6 @@ def getYesterdayPlayerMatches(puuid : str):
     with open(yesterdayMatches, 'w') as f:
         json.dump(currentMatches, f, indent = 4)
 
-    print(json.dumps(matches, indent = 4))  
-    pass
 
 
 
