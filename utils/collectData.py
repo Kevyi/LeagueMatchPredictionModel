@@ -10,21 +10,22 @@ tiers = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "
 divisions = ["I", "II", "III", "IV"] #Challenger/Grandmasters/Masters require still.
 
 puuidFile = "puuid.json"
-yesterdayMatchesFileFile = "yesterdayMatches.json"
+yesterdayMatchesFile = "yesterdayMatches.json"
 trainingDataFile = "trainingData.json"
 
 # Checks if files below are already made, if not make it.
 if not os.path.exists(puuidFile):
     with open(puuidFile, 'w') as f:
-        json.dump([], f)  # or [] if you want an empty list
+        json.dump({}, f)  # or [] if you want an empty list
 
 if not os.path.exists(trainingDataFile):
     with open(trainingDataFile, 'w') as f:
         json.dump([], f)  # or [] if you want an empty list
 
 # # Reset or creates yesterdayMatchesFile json. --> Takes too many api calls.
-# with open(yesterdayMatchesFile, 'w') as f:
-#     json.dump([], f)  # or [] if you want an empty list
+if not os.path.exists(yesterdayMatchesFile):
+    with open(yesterdayMatchesFile, 'w') as f:
+        json.dump([], f)  # or [] if you want an empty list
 
 def getRankedPlayers(tier : str):
 
@@ -64,8 +65,8 @@ def getRankedPlayers(tier : str):
     with open(puuidFile, 'r') as f:
         currentPuuids = json.load(f)
     
-    currentPuuids.extend(players)
-    currentPuuids = list(set(currentPuuids)) #Ensure unique items.
+    currentPuuids.setdefault(tier, []).extend(players)
+    currentPuuids[tier] = list(set(currentPuuids[tier])) #Ensure unique items. Unneeded?
     
     with open(puuidFile, 'w') as f:
         json.dump(currentPuuids, f, indent=4)
@@ -77,14 +78,13 @@ def getRankedPlayers(tier : str):
     elapsed_time = end_time - start_time
     print(f"Elapsed time: {elapsed_time:.4f} seconds")
 
-
 def getYesterdayPlayerMatches(puuid : str):
 
     # Get current UTC date
     today_utc = datetime.now(timezone.utc).date()
 
     # Calculate yesterday's date --> entire week.
-    yesterday_date = today_utc - timedelta(days=7)
+    yesterday_date = today_utc - timedelta(days=60)
 
     # Get midnight (start) of yesterday as a timezone-aware datetime
     start_of_yesterday = datetime(yesterday_date.year, yesterday_date.month, yesterday_date.day, tzinfo=timezone.utc)
@@ -95,7 +95,7 @@ def getYesterdayPlayerMatches(puuid : str):
     matches, status_code = APIs.getMatchesFromPlayer(region = "americas", 
         puuid = puuid, 
         startTime = start_time, 
-        count = 20, 
+        count = 100, 
         queue = 440, 
         matchType = "ranked"
     )
@@ -120,7 +120,7 @@ def getMatchDetails(matchId : str):
 
     players = matchInformation['info']['participants']
     additionalTeamInfo = matchInformation['info']["teams"]
-    teams = {100 : [], 200: []}
+    teams = {100 : {}, 200: {}}
 
 
     #records champions into JSON file.
@@ -128,7 +128,7 @@ def getMatchDetails(matchId : str):
         #Records Champions.
         writeChampion(player["championId"], player["championName"])
         #Adds to team dictionary.
-        teams[player["teamId"]].append({player["championId"] : player["championName"]})
+        teams[player["teamId"]][player["individualPosition"]] = player["championId"]
 
     #Finds which team won.
     if additionalTeamInfo[0]["win"]:
@@ -145,7 +145,6 @@ def getMatchDetails(matchId : str):
     with open(trainingDataFile, 'w') as f:
         json.dump(currentTrainingData, f, indent = 4)
 
-
 def writeChampion(championId : int, championName : str):
 
     fileName = "champions.json"
@@ -159,10 +158,9 @@ def writeChampion(championId : int, championName : str):
     with open(fileName, 'r') as f:
         data = json.load(f)
 
-    # # 2. Modify the data if champion not found. --> doesnt work.
-    # if championId not in data:
-    #     data[championId] = championName
-    data = list(set(data))
+    # # 2. Modify the data if champion not found. --> Sometimes adds multiple same key-value pairs.
+    if championId not in data:
+        data[championId] = championName
 
     # 3. Write it back to the file
     with open(fileName, 'w') as f:

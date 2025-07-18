@@ -36,9 +36,12 @@ def getRankedUsers(queue : str, tier : str, division : str, page : int, server: 
     return response.json() , response.status_code
 
 #remember to check for match duplicates. 420 = soloq, 440 = ranked flex
+    #max count = 100 or will break.
 def getMatchesFromPlayer(region : str, puuid : str, startTime : int, count : int,  queue : int = 420, matchType : str = "ranked"):
+    if count > 100: count = 100
+    #added endtime also -----------------------------remove later.
     #everything url: https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?startTime=1000&endTime=0&queue=0&type=ranked&start=4&count=20
-    url = f"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?startTime={startTime}&queue={queue}&type={matchType}&count={count}"
+    url = f"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?startTime={startTime}&endTime={1752185282}&queue={queue}&type={matchType}&count={count}"
 
     response = attemptRequest(url)
 
