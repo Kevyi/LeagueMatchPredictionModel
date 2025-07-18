@@ -1,4 +1,5 @@
 import requests
+import os
 import json
 from datetime import datetime, timedelta, timezone
 import endpoints as APIs
@@ -14,11 +15,20 @@ puuid = "_5RGhNXlzt3Fk6_K3ZE6UkEOBhXjvisoC7-HDq-3sDthWb2K8p3eYtKDrjiyQxfL7THIBGY
 # APIs.getMatchesFromPlayer(region = "americas", puuid = puuid, startTime = start_time, count = 20, queue = 440, matchType = "ranked")
 # APIs.getRankedUsers(queue = queue_types[0], tier = tiers[-1], division = divisions[0], page = 1, region = "na1")
 
-data.getRankedPlayers("CHALLENGER")
+# data.getRankedPlayers("CHALLENGER")
 # data.getRankedPlayers("GRANDMASTER")
 # data.getRankedPlayers("MASTER")
 # data.getRankedPlayers("DIAMOND")
 # data.getYesterdayPlayerMatches("cVvO4uv1pn_i88-lBhCBEIf1gcg5E21HkEOgC2nM54KAfthq1cYjUxBgoPqkY9zjkAR9EMW_pDkpdw")
 
-# APIs.getMatchStats(region = "americas", matchID = "NA1_5321872731")
+
+
+yesterdayMatchesFileFile = "yesterdayMatches.json"
+
+with open(yesterdayMatchesFileFile, "r") as f:
+    matches = json.load(f)
+    for match in matches:
+        data.getMatchDetails(match)
+
+# APIs.getMatchStats(region = "americas", matchID = "NA1_5325004163")
 #Use the champion id and not the name, use to determine pytorch winrate.

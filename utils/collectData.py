@@ -7,18 +7,23 @@ import time
 
 queue_types = ["RANKED_SOLO_5x5","RANKED_FLEX_SR"]
 tiers = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"] #ranks
-divisions = ["I", "II", "III", "IV"] #Challenger/Grandmasteres/Masters require still.
+divisions = ["I", "II", "III", "IV"] #Challenger/Grandmasters/Masters require still.
 
 puuidFile = "puuid.json"
-yesterdayMatches = "yesterdayMatches.json"
+yesterdayMatchesFileFile = "yesterdayMatches.json"
+trainingDataFile = "trainingData.json"
 
-# If puuid file doesn't exist, create it with empty data. Runs at beginning from import.
+# Checks if files below are already made, if not make it.
 if not os.path.exists(puuidFile):
     with open(puuidFile, 'w') as f:
         json.dump([], f)  # or [] if you want an empty list
 
-# # Reset or creates yesterdayMatches json. --> Takes too many api calls.
-# with open(yesterdayMatches, 'w') as f:
+if not os.path.exists(trainingDataFile):
+    with open(trainingDataFile, 'w') as f:
+        json.dump([], f)  # or [] if you want an empty list
+
+# # Reset or creates yesterdayMatchesFile json. --> Takes too many api calls.
+# with open(yesterdayMatchesFile, 'w') as f:
 #     json.dump([], f)  # or [] if you want an empty list
 
 def getRankedPlayers(tier : str):
@@ -37,7 +42,7 @@ def getRankedPlayers(tier : str):
             tier = tier, 
             division = divisions[divisionIndex], 
             page = page, 
-            region = "na1"
+            server = "na1"
         )
 
         #Breaks out of statement if we have an empty list and we exhausted all divisions, we exhausted all players in this rank.
@@ -54,14 +59,7 @@ def getRankedPlayers(tier : str):
         page += 1
     
     count = 0
-    for player in players:
-        getYesterdayPlayerMatches(player)
-        count += 1 
-        print(f"Matches: {count}")
-        #Buffer calls.
-        time.sleep(0.2)
 
-#--------------------
     #Store in JSON temporarily. Move to SQL later.
     with open(puuidFile, 'r') as f:
         currentPuuids = json.load(f)
@@ -71,7 +69,6 @@ def getRankedPlayers(tier : str):
     
     with open(puuidFile, 'w') as f:
         json.dump(currentPuuids, f, indent=4)
-#--------------------
 
     print(f"Byte Size: {sys.getsizeof(players)}")
     print(f"Player Amount: {len(players)}")
@@ -81,13 +78,12 @@ def getRankedPlayers(tier : str):
     print(f"Elapsed time: {elapsed_time:.4f} seconds")
 
 
-
 def getYesterdayPlayerMatches(puuid : str):
 
     # Get current UTC date
     today_utc = datetime.now(timezone.utc).date()
 
-    # Calculate yesterday's date
+    # Calculate yesterday's date --> entire week.
     yesterday_date = today_utc - timedelta(days=7)
 
     # Get midnight (start) of yesterday as a timezone-aware datetime
@@ -96,18 +92,82 @@ def getYesterdayPlayerMatches(puuid : str):
     # Convert to epoch timestamp in seconds
     start_time = int(start_of_yesterday.timestamp())
 
-    matches, status_code = APIs.getMatchesFromPlayer(region = "americas", puuid = puuid, startTime = start_time, count = 20, queue = 440, matchType = "ranked")
+    matches, status_code = APIs.getMatchesFromPlayer(region = "americas", 
+        puuid = puuid, 
+        startTime = start_time, 
+        count = 20, 
+        queue = 440, 
+        matchType = "ranked"
+    )
 
-    #--------------------
-    #Store in JSON temporarily. Move to SQL later.
-    with open(yesterdayMatches, 'r') as f:
+    #Store in JSON temporarily. Move to S3 buckets later.
+    with open(yesterdayMatchesFile, 'r') as f:
         currentMatches = json.load(f)
     
     currentMatches.extend(matches)
     currentMatches = list(set(currentMatches)) #Ensure unique items.
     
-    with open(yesterdayMatches, 'w') as f:
+    with open(yesterdayMatchesFile, 'w') as f:
         json.dump(currentMatches, f, indent = 4)
+
+def getMatchDetails(matchId : str):
+
+    matchInformation, status_code = APIs.getMatchStats(matchId = matchId, region = "americas") 
+    gameStatus = matchInformation['info']['endOfGameResult']
+
+    #Checks if game has actually finished (played through). 
+    if gameStatus != "GameComplete": return
+
+    players = matchInformation['info']['participants']
+    additionalTeamInfo = matchInformation['info']["teams"]
+    teams = {100 : [], 200: []}
+
+
+    #records champions into JSON file.
+    for player in players:
+        #Records Champions.
+        writeChampion(player["championId"], player["championName"])
+        #Adds to team dictionary.
+        teams[player["teamId"]].append({player["championId"] : player["championName"]})
+
+    #Finds which team won.
+    if additionalTeamInfo[0]["win"]:
+        teams["win"] = additionalTeamInfo[0]["teamId"]
+    else:
+        teams["win"] = additionalTeamInfo[1]["teamId"]
+
+    #Store in JSON temporarily.
+    with open(trainingDataFile, 'r') as f:
+        currentTrainingData = json.load(f)
+    
+    currentTrainingData.append(teams)
+    
+    with open(trainingDataFile, 'w') as f:
+        json.dump(currentTrainingData, f, indent = 4)
+
+
+def writeChampion(championId : int, championName : str):
+
+    fileName = "champions.json"
+
+    # If file doesn't exist, create it with empty data
+    if not os.path.exists(fileName):
+        with open(fileName, 'w') as f:
+            json.dump({}, f)  # or [] if you want an empty list
+
+    # 1. Read the JSON file
+    with open(fileName, 'r') as f:
+        data = json.load(f)
+
+    # # 2. Modify the data if champion not found. --> doesnt work.
+    # if championId not in data:
+    #     data[championId] = championName
+    data = list(set(data))
+
+    # 3. Write it back to the file
+    with open(fileName, 'w') as f:
+        json.dump(data, f, indent=4)  # 'indent' makes it pretty-printed
+
 
 
 

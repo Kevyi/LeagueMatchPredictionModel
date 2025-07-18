@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from utils.writeChampions import writeChampion
+from utils.collectData import writeChampion
 import time
 import requests
 import json
@@ -27,9 +27,9 @@ tiers = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "
 divisions = ["I", "II", "III", "IV"]
 
 #Store inside SQL database, have a recheck method weekly to check any changes in attributes.
-def getRankedUsers(queue : str, tier : str, division : str, page : int, region: str = "na1"):
-    #explicitly cast page int to string.
-    url = f"https://{region}.api.riotgames.com/lol/league-exp/v4/entries/{queue}/{tier}/{division}?page={page}"
+def getRankedUsers(queue : str, tier : str, division : str, page : int, server: str = "na1"):
+
+    url = f"https://{server}.api.riotgames.com/lol/league-exp/v4/entries/{queue}/{tier}/{division}?page={page}"
 
     response = attemptRequest(url)
 
@@ -44,16 +44,12 @@ def getMatchesFromPlayer(region : str, puuid : str, startTime : int, count : int
 
     return response.json(), response.status_code
 
-def getMatchStats(region : str, matchID : str):
-    url = f"https://{region}.api.riotgames.com/lol/match/v5/matches/{matchID}?api_key={api_key}"
+def getMatchStats(matchId : str, region : str = "americas",):
+    url = f"https://{region}.api.riotgames.com/lol/match/v5/matches/{matchId}?api_key={api_key}"
 
-    response = requests.get(url)
-    # print(json.dumps(response.json()['info']['participants'][0]["championName"], indent = 4))
-    players = response.json()['info']['participants']
-
-    for i in range(10):
-        player = players[i]
-        writeChampion(player["championId"], player["championName"])
+    response = attemptRequest(url)
+    
+    return response.json(), response.status_code
 
 
 def attemptRequest(url : str):
@@ -75,7 +71,8 @@ def attemptRequest(url : str):
     503	Service unavailable
     504	Gateway timeout
     """
-
+    #Attempts to get a connection request using 3 API keys. Could change code sequence to check 3 api keys at once. IP restricted.
+        #use iterator.
     for attempt in range(1, max_retries + 1):
         try:
             response = session.get(url, headers = headers, timeout=5)
