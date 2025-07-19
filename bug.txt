@@ -7,4 +7,9 @@ Riot API Key allows for 100 req every 2 minutes. --> Have multiple keys.
 
 Notice that when JSON dumps, it stringifies everything so keys are converted from int to strings.
 
-Use Redis, S3 Buckets, SQL instead of JSON.
+Use Redis, S3 Buckets, SQL instead of JSON. Use JSONL to store things, best for large dataset.
+
+
+
+https://jalammar.github.io/illustrated-transformer/
+https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html
