@@ -9,6 +9,9 @@ Notice that when JSON dumps, it stringifies everything so keys are converted fro
 
 Use Redis, S3 Buckets, SQL instead of JSON. Use JSONL to store things, best for large dataset.
 
+When training, do reverse order to train also. Improves generialization.
+
+
 
 
 https://jalammar.github.io/illustrated-transformer/

@@ -41,7 +41,8 @@ def getMatchesFromPlayer(region : str, puuid : str, startTime : int, count : int
     if count > 100: count = 100
     #added endtime also -----------------------------remove later.
     #everything url: https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?startTime=1000&endTime=0&queue=0&type=ranked&start=4&count=20
-    url = f"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?startTime={startTime}&endTime={1752185282}&queue={queue}&type={matchType}&count={count}"
+    # url = f"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?startTime={startTime}&endTime={1752185282}&queue={queue}&type={matchType}&count={count}"
+    url = f"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?startTime={startTime}&queue={queue}&type={matchType}&count={count}"
 
     response = attemptRequest(url)
 

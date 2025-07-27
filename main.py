@@ -25,23 +25,21 @@ puuid = "_5RGhNXlzt3Fk6_K3ZE6UkEOBhXjvisoC7-HDq-3sDthWb2K8p3eYtKDrjiyQxfL7THIBGY
 # puuidFile = "puuid.json"
 # with open(puuidFile, "r") as f:
 #     puuids = json.load(f)
-#     for id in puuids["DIAMOND"]:
+#     for id in puuids["CHALLENGER"]:
 #         data.getYesterdayPlayerMatches(id)
 
 
 
-# yesterdayMatchesFileFile = "yesterdayMatches.json"
+matchesFile = "yesterdayMatchesTraining.json"
+count = 0
 
-# with open(yesterdayMatchesFileFile, "r") as f:
-#     matches = json.load(f)
-#     for match in matches:
-#         data.getMatchDetails(match)
+with open(matchesFile, "r") as f:
+    matches = json.load(f)
+    for match in matches:
+        data.getMatchDetails(match)
+        count += 1
+        print(count)
 
-file = "trainingData.json"
-
-with open(file, "r") as f:
-    data = json.load(f)
-    print(len(data))
 
 # APIs.getMatchStats(region = "americas", matchID = "NA1_5325004163")
 #Use the champion id and not the name, use to determine pytorch winrate.

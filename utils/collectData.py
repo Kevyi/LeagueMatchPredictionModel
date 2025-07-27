@@ -84,7 +84,7 @@ def getYesterdayPlayerMatches(puuid : str):
     today_utc = datetime.now(timezone.utc).date()
 
     # Calculate yesterday's date --> 60 days.
-    yesterday_date = today_utc - timedelta(days=60) 
+    yesterday_date = today_utc - timedelta(days=1) 
 
     # Get midnight (start) of yesterday as a timezone-aware datetime
     start_of_yesterday = datetime(yesterday_date.year, yesterday_date.month, yesterday_date.day, tzinfo=timezone.utc)
