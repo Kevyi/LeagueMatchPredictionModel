@@ -22,23 +22,19 @@ puuid = "_5RGhNXlzt3Fk6_K3ZE6UkEOBhXjvisoC7-HDq-3sDthWb2K8p3eYtKDrjiyQxfL7THIBGY
 # data.getYesterdayPlayerMatches("cVvO4uv1pn_i88-lBhCBEIf1gcg5E21HkEOgC2nM54KAfthq1cYjUxBgoPqkY9zjkAR9EMW_pDkpdw")
 
 
-# puuidFile = "puuid.json"
-# with open(puuidFile, "r") as f:
-#     puuids = json.load(f)
-#     for id in puuids["CHALLENGER"]:
-#         data.getYesterdayPlayerMatches(id)
+
+data.getAllYesterdayPlayerMatches()
 
 
+# matchesFile = "yesterdayMatchesTraining.json"
+# count = 0
 
-matchesFile = "yesterdayMatchesTraining.json"
-count = 0
-
-with open(matchesFile, "r") as f:
-    matches = json.load(f)
-    for match in matches:
-        data.getMatchDetails(match)
-        count += 1
-        print(count)
+# with open(matchesFile, "r") as f:
+#     matches = json.load(f)
+#     for match in matches:
+#         data.getMatchDetails(match)
+#         count += 1
+#         print(count)
 
 
 # APIs.getMatchStats(region = "americas", matchID = "NA1_5325004163")

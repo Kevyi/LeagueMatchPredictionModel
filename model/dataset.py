@@ -9,9 +9,16 @@ class LoLMatchDataset(Dataset):
             r = match["200"]
             winner = match["win"]
 
-            blue = [b["TOP"], b["JUNGLE"], b["MIDDLE"], b["BOTTOM"], b["UTILITY"]]
-            red  = [r["TOP"], r["JUNGLE"], r["MIDDLE"], r["BOTTOM"], r["UTILITY"]]
+            try:
+
+                blue = [b["TOP"], b["JUNGLE"], b["MIDDLE"], b["BOTTOM"], b["UTILITY"]]
+                red  = [r["TOP"], r["JUNGLE"], r["MIDDLE"], r["BOTTOM"], r["UTILITY"]]
             
+            except KeyError:
+
+                # print("Key-Position non-existent, data not queried properly.")
+                continue
+
             #Gets ordered data and reverse data.
 
             # Original order

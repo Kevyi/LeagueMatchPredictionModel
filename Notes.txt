@@ -1,0 +1,57 @@
+Sometimes API calls are getting called multiple times even after sleep. --Fixed?
+Change List to set within CollectData because there are duplicate unique identifiers. Maybe riot games issue? -- Fixed.
+
+
+
+Riot API Key allows for 100 req every 2 minutes. --> Have multiple keys. Doesn't work.
+
+Notice that when JSON dumps, it stringifies everything so keys are converted from int to strings.
+
+Use Redis, S3 Buckets, SQL instead of JSON. Use JSONL to store things, best for large dataset.
+
+When training, do reverse order to train also. Improves generialization.
+-------------------------------------------------------------------------------
+
+More epochs are good to train on intricate data points but if there are many repeated data points, it's not very useful as that might overfit.
+League is a very complex game BUT the thing is, a lot of people choose the same team composition meaning model could overfit.
+
+Feed a lot of data at once so it sees all the patterns, but after a lot of data do small little batches. Once all patterns have been recognized, large data might not be ideal.
+
+https://github.com/DeepKnowledge1/ml?tab=readme-ov-file
+https://jalammar.github.io/illustrated-transformer/
+https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html
+
+
+
+
+> Speaking of which, do I need to publish my docker image to some external site, like docker hub so my server can pull it later, even though my repository already contains the dockerfile?
+
+I'll focus my answer on this part; short answer is yes. Doing CICD on a distributed cluster such as kubernetes, is normally composed of two workflows, (some people merge them together):
+
+- CI: from source code origin, build your image and push it to the registry.
+- CD: update the declarative resources on kubernetes to pull the new image and update other changes (configmaps etc, potentially bundled together in helm chart)
+
+The registry is necessary because the concepts are decoupled. The deployment doesn't know the source code repo, it only knows how to pull a registry image, if a new pod is run it will pull the image from registry.
+
+CD part is normally done using GitOps principles, having a repo with declarative state of what you want your cluster to contain, though you can do without as learning step.
+
+
+
+-----------------------
+CronJob (03:00 UTC) → trains → writes model-2025-07-31.pkl to PVC or S3.
+
+Optional Trigger → a lightweight service or webhook sees the new file and
+
+CI/CD Pipeline →
+
+Builds a new Docker image inference:2025-07-31 (with that model baked in or pulled at startup)
+
+Pushes it to your registry
+
+Updates your Deployment (via kubectl apply or Helm)
+
+That way, each system does what it’s best at:
+
+CronJob → scheduled compute + artifact persistence
+
+CI/CD → versioned builds + safe, auditable roll-outs

@@ -27,6 +27,21 @@ if not os.path.exists(yesterdayMatchesFile):
     with open(yesterdayMatchesFile, 'w') as f:
         json.dump([], f)  # or [] if you want an empty list
 
+def getAllYesterdayPlayerMatches():
+    puuidFile = "puuid.json"
+
+    #Did challenger and prob some grandmaster lastnight. Switch to master or diamond for more matches.
+    with open(puuidFile, "r") as f:
+        puuids = json.load(f)
+        for id in puuids["CHALLENGER"]:
+            getYesterdayPlayerMatches(id)
+        for id in puuids["GRANDMASTER"]:
+            getYesterdayPlayerMatches(id)
+        for id in puuids["MASTER"]:
+            getYesterdayPlayerMatches(id)
+        for id in puuids["DIAMOND"]:
+            getYesterdayPlayerMatches(id)
+
 def getRankedPlayers(tier : str):
 
     start_time = time.time() # Record the start time
@@ -83,7 +98,7 @@ def getYesterdayPlayerMatches(puuid : str):
     # Get current UTC date
     today_utc = datetime.now(timezone.utc).date()
 
-    # Calculate yesterday's date --> 60 days.
+    # Calculate yesterday's date -->
     yesterday_date = today_utc - timedelta(days=1) 
 
     # Get midnight (start) of yesterday as a timezone-aware datetime
@@ -120,7 +135,7 @@ def getMatchDetails(matchId : str):
 
     players = matchInformation['info']['participants']
     additionalTeamInfo = matchInformation['info']["teams"]
-    teams = {100 : {}, 200: {}}
+    teams = {100 : {}, 200: {}, "matchId": matchId}
 
 
     #records champions into JSON file.
