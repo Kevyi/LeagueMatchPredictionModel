@@ -3,6 +3,7 @@ import os
 import json
 from datetime import datetime, timedelta, timezone
 import endpoints as APIs
+from db.database import db
 import utils.collectData as data
 
 queue_types = ["RANKED_SOLO_5x5","RANKED_FLEX_SR"]
@@ -36,6 +37,9 @@ data.getAllYesterdayPlayerMatches()
 #         count += 1
 #         print(count)
 
+
+if db.client:
+    db.client.close()
 
 # APIs.getMatchStats(region = "americas", matchID = "NA1_5325004163")
 #Use the champion id and not the name, use to determine pytorch winrate.

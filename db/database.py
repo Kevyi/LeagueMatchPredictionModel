@@ -1,0 +1,107 @@
+from pymongo import MongoClient
+from pymongo.errors import BulkWriteError
+from dotenv import load_dotenv
+import os
+
+load_dotenv() 
+db_uri = os.getenv("db_uri")
+
+def singleton(cls):
+    instances = {}
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+    return get_instance
+
+@singleton
+class Database:
+
+    def __init__(self):
+        #Like a Singleton. Enacts DB.
+        try: 
+            self.client = MongoClient(db_uri)
+            self.client.admin.command("ping")
+            self.db_leagueData = self.client.get_database("leagueData")
+            self.collectionNames = ["trainingMatchData", "models", "validationMatchData", "yesterdayMatchesData"]
+
+            self.instantiateCollections()
+
+            self.trainingCollection = self.db_leagueData.get_collection("trainingMatchData")
+            self.modelsCollection = self.db_leagueData.get_collection("models")
+            self.validationCollection = self.db_leagueData.get_collection("validationMatchData")
+            self.yesterdayCollection = self.db_leagueData.get_collection("yesterdayMatchesData")
+
+            #Deleted all yesterday's matches ID after one day (a little bit less). Generate uniqueness for their ids.
+            self.yesterdayCollection.create_index(
+                [("createdAt", 1)],
+                expireAfterSeconds=86400,
+                name="ttl_createdAt_1d"
+            )
+            self.yesterdayCollection.create_index(
+                "matchId", unique = True
+            )
+
+            print("Database connected successfully")
+        except Exception as e:
+            print(f"Failed to connect to Database. Exception: {e}")
+
+    def instantiateCollections(self):
+        for collectionName in self.collectionNames:
+            if collectionName not in self.db_leagueData.list_collection_names():
+                try:
+                        # Option A: explicitly create an empty collection
+                        self.db_leagueData.create_collection(collectionName)
+                        print(f"Created empty collection '{collectionName}' in database '{self.db_leagueData}'.")
+                except errors.CollectionInvalid:
+                    # race-condition safety: someone else made it
+                    print(f"Collection '{collectionName}' already exists.")
+            else:
+                print(f"Collection '{collectionName}' already exists in '{self.db_leagueData}'.")
+
+    def insertMatch(self, data, dataType = "training"):
+        if dataType == "training":
+            self.trainingCollection.insert_one(data)
+        elif dataType == "validation":
+            self.validationCollection.insert_one(data)
+        else:
+            print("Invalid data type.")
+    
+    def insertYesterdayMatch(self, data):
+        try:
+            self.yesterdayCollection.insert_many(data, ordered=False)
+        except BulkWriteError as duplicateError:
+            pass
+        except Exception as e:
+            prin
+
+
+db = Database()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
