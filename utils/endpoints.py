@@ -1,5 +1,4 @@
 from dotenv import load_dotenv
-from utils.collectData import writeChampion
 import time
 import requests
 import json

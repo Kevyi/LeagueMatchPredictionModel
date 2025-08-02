@@ -2,7 +2,6 @@ import requests
 import os
 import json
 from datetime import datetime, timedelta, timezone
-import endpoints as APIs
 from db.database import db
 import utils.collectData as data
 
@@ -24,19 +23,20 @@ puuid = "_5RGhNXlzt3Fk6_K3ZE6UkEOBhXjvisoC7-HDq-3sDthWb2K8p3eYtKDrjiyQxfL7THIBGY
 
 
 
-data.getAllYesterdayPlayerMatches()
+# data.getAllYesterdayPlayerMatches()
 
 
-# matchesFile = "yesterdayMatchesTraining.json"
-# count = 0
+matchesFile = "yesterdayMatchesTraining.json"
+count = 0
 
-# with open(matchesFile, "r") as f:
-#     matches = json.load(f)
-#     for match in matches:
-#         data.getMatchDetails(match)
-#         count += 1
-#         print(count)
+with open(matchesFile, "r") as f:
+    matches = json.load(f)
+    for match in matches:
+        data.getMatchDetails(match)
+        count += 1
+        print(count)
 
+# db.getData()
 
 if db.client:
     db.client.close()

@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime, timedelta, timezone
-import endpoints as APIs
+import utils.endpoints as APIs
 from db.database import db
 import sys
 import time
@@ -11,17 +11,11 @@ tiers = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "
 divisions = ["I", "II", "III", "IV"] #Challenger/Grandmasters/Masters require still.
 
 puuidFile = "puuid.json"
-yesterdayMatchesFile = "yesterdayMatches.json"
 
 # Checks if files below are already made, if not make it.
 if not os.path.exists(puuidFile):
     with open(puuidFile, 'w') as f:
         json.dump({}, f)  # or [] if you want an empty list
-
-# # Reset or creates yesterdayMatchesFile json. --> Takes too many api calls.
-if not os.path.exists(yesterdayMatchesFile):
-    with open(yesterdayMatchesFile, 'w') as f:
-        json.dump([], f)  # or [] if you want an empty list
 
 def getAllYesterdayPlayerMatches():
     puuidFile = "puuid.json"
@@ -128,9 +122,6 @@ def getYesterdayPlayerMatches(puuid : str):
 
     if data:
         db.insertYesterdayMatch(data)
-
-
-
 
 def getMatchDetails(matchId : str):
 

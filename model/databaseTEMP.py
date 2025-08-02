@@ -60,11 +60,12 @@ class Database:
                 print(f"Collection '{collectionName}' already exists in '{self.db_leagueData}'.")
 
     def insertMatch(self, data, dataType = "training"):
-        match dataType:
-            case "training":
-                self.trainingCollection.insert_one(data)
-            case "validation":
-                self.validationCollection.insert_one(data)
+        if dataType == "training":
+            self.trainingCollection.insert_one(data)
+        elif dataType == "validation":
+            self.validationCollection.insert_one(data)
+        else:
+            print("Invalid data type.")
     
     def insertYesterdayMatch(self, data):
         try:
@@ -93,13 +94,13 @@ class Database:
         #Finds all documents.
         cursor = collection.find({}) #.batch_size(BATCH_SIZE)
 
-        print(len(list(cursor)))
-
         # for doc in cursor.count():
         #     # doc is a Python dict
         #     print(doc)
 
-        return list(cursor)
+        res = list(cursor)
+
+        return res
 
 db = Database()
 
