@@ -33,11 +33,14 @@ class Database:
             self.yesterdayCollection = self.db_leagueData.get_collection("yesterdayMatchesData")
 
             #Deleted all yesterday's matches ID after one day (a little bit less). Generate uniqueness for their ids.
-            self.yesterdayCollection.create_index(
-                [("createdAt", 1)],
-                expireAfterSeconds=86400, #Just make it high for now.
-                name="ttl_createdAt_1d"
-            )
+            # self.yesterdayCollection.create_index(
+            #     [("createdAt", 1)],
+            #     expireAfterSeconds=86400, #Just make it high for now.
+            #     name="ttl_createdAt_1d"
+            # )
+
+            #ADD COLLECTION INDEX TO trainingCollection to filter by date, for new data.
+
             self.yesterdayCollection.create_index(
                 "matchId", unique = True
             )
@@ -59,12 +62,19 @@ class Database:
             else:
                 print(f"Collection '{collectionName}' already exists in '{self.db_leagueData}'.")
 
-    def insertMatch(self, data, dataType = "training"):
+    def insertData(self, data, dataType = "training"):
         match dataType:
             case "training":
                 self.trainingCollection.insert_one(data)
             case "validation":
                 self.validationCollection.insert_one(data)
+            case "yesterdayMatches":
+                try:
+                    self.yesterdayCollection.insert_many(data, ordered=False)
+                except BulkWriteError as duplicateError:
+                    pass
+                except Exception as e:
+                    print(f"database error: {e}")
     
     def insertYesterdayMatch(self, data):
         try:
@@ -88,18 +98,14 @@ class Database:
             case "models":
                 collection = self.modelsCollection
             case "yesterdayMatches":
-                collection = yesterdayCollection
+                collection = self.yesterdayCollection
 
         #Finds all documents.
         cursor = collection.find({}) #.batch_size(BATCH_SIZE)
 
-        print(len(list(cursor)))
+        res = list(cursor)
 
-        # for doc in cursor.count():
-        #     # doc is a Python dict
-        #     print(doc)
-
-        return list(cursor)
+        return res
 
 db = Database()
 

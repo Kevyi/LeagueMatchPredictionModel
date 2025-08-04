@@ -18,7 +18,6 @@ if not os.path.exists(puuidFile):
         json.dump({}, f)  # or [] if you want an empty list
 
 def getAllYesterdayPlayerMatches():
-    puuidFile = "puuid.json"
 
     #Did challenger and prob some grandmaster lastnight. Switch to master or diamond for more matches.
     with open(puuidFile, "r") as f:
@@ -29,8 +28,27 @@ def getAllYesterdayPlayerMatches():
             getYesterdayPlayerMatches(id)
         for id in puuids["MASTER"]:
             getYesterdayPlayerMatches(id)
-        for id in puuids["DIAMOND"]:
-            getYesterdayPlayerMatches(id)
+        # for id in puuids["DIAMOND"]:
+        #     getYesterdayPlayerMatches(id)
+
+def getAllMatchDetails():
+    matchIds = db.getData(dataType = "yesterdayMatches")
+    split_point = int(len(matchIds) * 0.8)
+    trainingSet = matchIds[:split_point]
+    validationSet = matchIds[split_point:]
+
+    trainingCount = 0
+    validationCount = 0
+
+    for item in trainingSet:
+        trainingCount += 1
+        print(f"Added training match data: {count}")
+        getMatchDetails(item["matchId"], "testing")
+    
+    for item in validationSet:
+        validationCount += 1
+        print(f"Added validation match data: {count}")
+        getMatchDetails(item["matchId"], "validation")
 
 def getRankedPlayers(tier : str):
 
@@ -105,25 +123,15 @@ def getYesterdayPlayerMatches(puuid : str):
         matchType = "ranked"
     )
 
-    # #Store in JSON temporarily. Move to S3 buckets later.
-    # with open(yesterdayMatchesFile, 'r') as f:
-    #     currentMatches = json.load(f)
-    
-    # currentMatches.extend(matches)
-    # currentMatches = list(set(currentMatches)) #Ensure unique items.
-    
-    # with open(yesterdayMatchesFile, 'w') as f:
-    #     json.dump(currentMatches, f, indent = 4)
-
     data = []
     for match in matches:
         matchData = {"matchId": match, "createdAt": datetime.utcnow()}
         data.append(matchData)
 
     if data:
-        db.insertYesterdayMatch(data)
+        db.insertdata(data, dataType = "yesterdayMatches")
 
-def getMatchDetails(matchId : str):
+def getMatchDetails(matchId : str, matchType : str = "training"):
 
     matchInformation, status_code = APIs.getMatchStats(matchId = matchId, region = "americas") 
     gameStatus = matchInformation['info']['endOfGameResult']
@@ -149,7 +157,7 @@ def getMatchDetails(matchId : str):
     else:
         data["win"] = additionalTeamInfo[1]["teamId"]
 
-    db.insertMatch(data, dataType = "training")
+    db.insertData(data, dataType = matchType)
 
 def writeChampion(championId : int, championName : str):
 

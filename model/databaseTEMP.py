@@ -94,10 +94,6 @@ class Database:
         #Finds all documents.
         cursor = collection.find({}) #.batch_size(BATCH_SIZE)
 
-        # for doc in cursor.count():
-        #     # doc is a Python dict
-        #     print(doc)
-
         res = list(cursor)
 
         return res

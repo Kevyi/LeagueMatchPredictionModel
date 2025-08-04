@@ -31,7 +31,13 @@ matches = db.getData()
 
 datasetLOL = LoLMatchDataset(matches)
 dataloader = DataLoader(datasetLOL, batch_size = 32, shuffle = True)
-print(f"test + {len(datasetLOL)}")
+
+
+# 1) Prepare lists
+train_losses = []
+val_losses   = []   # if you’re also doing a validation pass each epoch
+
+
 
 for epoch in range(1):
     model.train()                      # put model into “training” mode
@@ -52,6 +58,7 @@ for epoch in range(1):
 
     epoch_loss = running_loss / len(dataloader.dataset)
     overall_batch_size += len(dataloader.dataset)
+    train_losses.append(epoch_loss)
     print(f"Train Loss: {epoch_loss:.4f}")
 
 print(f"Overall Training Loss: {overall_running_loss/overall_batch_size:.4f}")
@@ -60,7 +67,7 @@ print(f"Overall Training Loss: {overall_running_loss/overall_batch_size:.4f}")
 validationMatches = db.getData(dataType = "validation")
 
 datasetLOL = LoLMatchDataset(validationMatches)
-dataloader = DataLoader(datasetLOL, batch_size = 32, shuffle = True)
+dataloader = DataLoader(datasetLOL, batch_size = 32, shuffle = False)
 
 # — Optional: validation at the end of each epoch —
 model.eval()
@@ -76,16 +83,24 @@ with torch.no_grad(): #Basically prevents recording gradient for optimizer.step(
 
         # 2) Error‐rate accumulation
         probs = torch.sigmoid(outputs.squeeze())              # convert logits → [0,1]
-        preds = (probs > 0.5).float()               # threshold at 0.5
+        preds = (probs > 0.5).float()               # threshold at 0.5. I
         running_incorrect += (preds != labels).sum().item()
 
 val_loss /= len(dataloader.dataset)
+val_losses.append(val_loss)
 val_error_rate = running_incorrect / len(dataloader.dataset)
 
 print(f"           Val   Loss: {val_loss:.4f}")
 print(f"Error Loss: {val_error_rate}")
 
 
+# Visualization if I have epochs.
+# from torch.utils.tensorboard import SummaryWriter
+# writer = SummaryWriter('runs/exp1')
+# for epoch, (t_loss, v_loss) in enumerate(zip(train_losses, val_losses), 1):
+#     writer.add_scalar('Loss/Train', t_loss, epoch)
+#     writer.add_scalar('Loss/Val',   v_loss, epoch)
+# writer.close()
 
 
 
